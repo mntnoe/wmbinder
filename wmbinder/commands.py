@@ -7,7 +7,7 @@ import re
 from wmbinder import window_types
 from wmbinder import workspace
 
-PREV_WS = 0
+PREV_WS = -1
 NEXT_WS = 1
 
 EMPTY_WS = 0
@@ -83,8 +83,10 @@ def close():
 
 
 def gotoWorkspace(direction, wsType):
-    # TODO
-    pass
+    screen  = wnck.screen_get_default()
+    screen.force_update()
+    n = workspace.active_workspace_no(screen)
+    workspace.goto_workspace_no(n+direction)
 
 def _get_windows_sorted(screen=None):
     if screen is None:

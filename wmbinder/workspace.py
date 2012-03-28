@@ -17,10 +17,20 @@ def active_workspace_no(screen=None):
     ws = screen.get_active_workspace()
     return ws.get_viewport_x() / screen.get_width()
 
+def get_workspace_count(screen=None):
+    if screen is None:
+        screen  = wnck.screen_get_default()
+        screen.force_update()
+
+    return screen.get_workspace(0).get_width() / screen.get_width()
+
 def goto_workspace_no(n, screen=None):
     if screen is None:
         screen  = wnck.screen_get_default()
         screen.force_update()
+
+    n = max(0, n)
+    n = min(n, get_workspace_count(screen) - 1)
     
     ws = screen.get_active_workspace()
     screen.move_viewport(n * screen.get_width(), ws.get_viewport_y())
