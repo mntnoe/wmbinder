@@ -57,7 +57,7 @@ def focus(clazz, title=None, cmd=None):
         spawn(cmd)
 
 
-def nextWindow():
+def next_window():
     """
     Focus the next window in the stack.
     """
@@ -66,7 +66,7 @@ def nextWindow():
     windows[0].activate(int(time.time()))
 
 
-def prevWindow():
+def prev_window():
     """
     Focus the previous window in the stack.
     """
@@ -82,17 +82,79 @@ def close():
     active.close(int(time.time()))
 
 
-def gotoWorkspace(direction, wsType):
+def goto_workspace(direction, wsType):
+    """
+    @param   direction   PREV_WS or NEXT_WS
+    @param   wsType      EMPTY_WS or USED_WS
+    """
     screen  = wnck.screen_get_default()
     screen.force_update()
-    n = workspace.active_workspace_no(screen)
-    workspace.goto_workspace_no(n+direction)
 
-def _get_windows_sorted(screen=None):
-    if screen is None:
-        screen  = wnck.screen_get_default()
-        screen.force_update()
+    workspaces =     _build_workspaces(direction, screen)
+    window_anchors = _build_window_anchors(screen)
 
+    test = (     (lambda x, xs: x in xs) 
+            if   wsType == USED_WS 
+            else (lambda x, xs: x not in xs))
+
+    for i in workspaces:
+        if test(i, window_anchors):
+            workspace.goto_workspace_no(i, screen)
+            return
+
+
+def move_to_workspace(direction, wsType):
+    """
+    @param   direction   PREV_WS or NEXT_WS
+    @param   wsType      EMPTY_WS or USED_WS
+    """
+    screen  = wnck.screen_get_default()
+    screen.force_update()
+
+    workspaces =     _build_workspaces(direction, screen)
+    window_anchors = _build_window_anchors(screen)
+
+    test = (     (lambda x, xs: x in xs) 
+            if   wsType == USED_WS 
+            else (lambda x, xs: x not in xs))
+
+    w = screen.get_active_window()
+
+    for i in workspaces:
+        if test(i, window_anchors):
+            workspace.move_to_workspace_no(w, i, screen)
+            return
+
+
+def _build_workspaces(direction, screen):
+    wno  = workspace.active_workspace_no(screen)
+    cnt  = workspace.get_workspace_count(screen)
+
+    lim1 = cnt if direction > 0 else -1
+    lim2 = 0   if direction > 0 else cnt-1
+
+    workspaces = (range(wno+direction, lim1, direction) + 
+                  range(lim2, wno+direction, direction))
+
+    return workspaces
+
+
+def _build_window_anchors(screen):
+    ws = screen.get_workspace(0)
+    vx = ws.get_viewport_x()
+    sw = screen.get_width()
+    
+    window_anchors = []
+    for w in screen.get_windows():
+        if window_types.is_focusable_type(w):
+            (x, y, w, h) = w.get_geometry()
+            center_abs   = x+vx + w/2
+            window_anchors.append(center_abs / sw)
+
+    return window_anchors
+
+
+def _get_windows_sorted(screen):
     active  = screen.get_active_window()
     return _sort_active_last(active, screen.get_windows())
 
@@ -119,7 +181,7 @@ def _get_visible_windows():
     screen.force_update()
     ws = screen.get_active_workspace()
 
-    windows = _get_windows_sorted(screen=screen)
+    windows = _get_windows_sorted(screen)
     windows = filter(window_types.is_focusable_type, windows)
     windows = filter(lambda w: w.is_in_viewport(ws), windows)
     return windows
