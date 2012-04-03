@@ -18,13 +18,23 @@ def bind(binding, func, *args, **kwargs):
     """Wrapper for keybinder.bind() allowing kwargs."""
     import keybinder
     def run(_): func(*args, **kwargs)
+    try:
+        keybinder.unbind(binding)
+    except:
+        pass
     keybinder.bind(binding, run, None)
 
 
 def spawn(cmd):
     """Spawn a shell command in background."""
+    import os
     from subprocess import Popen
-    Popen(cmd, shell=True)
+
+    pid = os.fork()
+    if pid == 0:
+        os.setsid()
+        Popen(cmd, shell=True)
+        os._exit(0)
 
 
 def focus(clazz, title=None, cmd=None):
@@ -44,7 +54,7 @@ def focus(clazz, title=None, cmd=None):
     windows = filter(window_types.is_focusable_type, windows)
 
     for w in windows:
-        match = re.match(clazz, w.get_class_group().get_name())
+        match = re.match(clazz, w.get_class_group().get_res_class())
         if title is not None:
             match &= re.match(title, w.get_name())
 
