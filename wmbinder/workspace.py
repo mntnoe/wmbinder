@@ -21,6 +21,7 @@ def goto_workspace_no(n, screen):
     n = min(n, get_workspace_count(screen) - 1)
     
     ws = screen.get_active_workspace()
+
     screen.move_viewport(n * screen.get_width(), ws.get_viewport_y())
 
 def goto_workspace_for_window(w, screen):
@@ -40,11 +41,18 @@ def get_workspace_for_window(window, screen):
 
 
 def move_to_workspace_no(w, n, screen):
-
     n = max(0, n)
     n = min(n, get_workspace_count(screen) - 1)
-    
+    new_x = n * screen.get_width()
+
     ws = screen.get_active_workspace()
-    screen.move_viewport(n * screen.get_width(), ws.get_viewport_y())
+    
+    #(x, y, width, height) = w.get_geometry()
+    #x += new_x - ws.get_viewport_x()
+    #w.set_geometry(wnck.WINDOW_GRAVITY_CURRENT, wnck.WINDOW_CHANGE_X, x, y, width, height)
+
+    w.stick()
+    screen.move_viewport(new_x, ws.get_viewport_y())
+    w.unstick()
 
     
