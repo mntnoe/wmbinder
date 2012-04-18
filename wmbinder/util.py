@@ -21,7 +21,7 @@ def setup_service(path):
             os.kill(pid, signal.SIGHUP)
             # Wait until the proces has quit -- otherwise it will remove
             # our pid file and conflict with our bind calls.
-            while True: 
+            for i in xrange(20): # 4 seconds
                 try:
                     os.kill(pid, 0)
                     time.sleep(0.2)
