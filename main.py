@@ -18,6 +18,7 @@ if __name__ == '__main__':
     bind("<Mod5>s"        , focus , "Nautilus"  , cmd="nautilus ~")
     bind("<Mod5>v"        , focus , "Gvim"      , cmd="gvim --servername VIM")
     bind("<Mod5>d"        , focus , "Eclipse"   , cmd="eclipse_p2p")
+    bind("<Mod5>w"        , focus , "com-sun-javaws-Main")
     bind("<Mod5>n"        , next_window)
     bind("<Mod5>e"        , prev_window)
     bind("<Mod5>y"        , goto_workspace, PREV_WS, EMPTY_WS)
