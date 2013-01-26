@@ -56,7 +56,7 @@ def focus(clazz, title=None, cmd=None):
     for w in windows:
         match = re.match(clazz, w.get_class_group().get_res_class())
         if title is not None:
-            match &= re.match(title, w.get_name())
+            match = match and re.match(title, w.get_name())
 
         if match:
             workspace.goto_workspace_for_window(w, screen)
