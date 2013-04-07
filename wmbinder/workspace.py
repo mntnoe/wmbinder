@@ -6,7 +6,9 @@ changes viewport coordinates when switching "workspaces". This wrapper
 has functions for determining and switching between compiz's workspaces.
 """
 
-import wnck
+import gi
+gi.require_version('Wnck', '3.0')
+from gi.repository import Wnck
 
 
 def active_workspace_no(screen):
@@ -49,7 +51,7 @@ def move_to_workspace_no(w, n, screen):
     
     #(x, y, width, height) = w.get_geometry()
     #x += new_x - ws.get_viewport_x()
-    #w.set_geometry(wnck.WINDOW_GRAVITY_CURRENT, wnck.WINDOW_CHANGE_X, x, y, width, height)
+    #w.set_geometry(Wnck.WINDOW_GRAVITY_CURRENT, Wnck.WINDOW_CHANGE_X, x, y, width, height)
 
     w.stick()
     screen.move_viewport(new_x, ws.get_viewport_y())

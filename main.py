@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 
-import gtk
 from os.path import dirname
+from sys import argv
+
+import gi
+gi.require_version('Gdk', '3.0')
+gi.require_version('Gtk', '3.0')
+gi.require_version('Keybinder', '3.0')
+from gi.repository import Gdk
+from gi.repository import Gtk
+from gi.repository import Keybinder
 
 from wmbinder.commands import *
 from wmbinder import util
@@ -11,13 +19,16 @@ if __name__ == '__main__':
 
     util.setup_service(dirname(__file__))
 
+    Gtk.init(argv)
+    Keybinder.init()
+
     bind("<Mod5>z"        , spawn , "xclip -selection primary -o | xclip -selection clipboard -i")
     bind("<Mod5>x"        , spawn , "xterm")
     bind("<Mod5>c"        , focus , "XTerm"     , cmd="xterm")
     bind("<Mod5>t"        , focus , "Firefox"   , cmd="firefox")
     bind("<Mod5>s"        , focus , "Nautilus"  , cmd="nautilus ~")
     bind("<Mod5>v"        , focus , "Gvim"      , cmd="gvim --servername VIM")
-    bind("<Mod5>d"        , focus , "Eclipse"   , cmd="eclipse_p2p")
+    bind("<Mod5>d"        , focus , "Eclipse")
     bind("<Mod5>w"        , focus , "com-sun-javaws-Main")
     bind("<Mod5>n"        , next_window)
     bind("<Mod5>e"        , prev_window)
@@ -32,7 +43,7 @@ if __name__ == '__main__':
     bind("<Mod5>k"        , close)
 
     try:
-        gtk.main()
+        Gtk.main()
     except KeyboardInterrupt:
         pass
 

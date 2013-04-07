@@ -1,11 +1,17 @@
 """Command functions for wmbinder.py."""
 
 import time
-import wnck
 import re
 
 from wmbinder import window_types
 from wmbinder import workspace
+
+import gi
+gi.require_version('Keybinder', '3.0')
+gi.require_version('Wnck', '3.0')
+from gi.repository import Keybinder
+from gi.repository import Wnck
+
 
 PREV_WS = -1
 NEXT_WS = 1
@@ -16,13 +22,15 @@ USED_WS = 1
 
 def bind(binding, func, *args, **kwargs):
     """Wrapper for keybinder.bind() allowing kwargs."""
-    import keybinder
-    def run(_): func(*args, **kwargs)
+
+    def run(_, __): func(*args, **kwargs)
     try:
-        keybinder.unbind(binding)
+        Keybinder.unbind(binding)
     except:
         pass
-    keybinder.bind(binding, run, None)
+    success = Keybinder.bind(binding, run, None)
+    if not success:
+        print "Error binding '%s'" % binding
 
 
 def spawn(cmd):
@@ -37,7 +45,7 @@ def spawn(cmd):
         os._exit(0)
 
 
-def focus(clazz, title=None, cmd=None):
+def focus(clazz, title=None, cmd=None, no_wnck=False):
     """
     Focus a window matching a class. Cycle between multiple windows matching the class.
     
@@ -45,9 +53,10 @@ def focus(clazz, title=None, cmd=None):
     @param   clazz   Regular expression to match against the window's class.
     @keyword title   If given, also match the window's title against this regular expression.
     @keyword cmd     Shell command to run if now windows matches.
+    @keyword no_wnck Uses xdotool instead of wnck to focus the window.
     """
 
-    screen  = wnck.screen_get_default()
+    screen = Wnck.Screen.get_default()
     screen.force_update()
 
     windows = _get_windows_sorted(screen)
@@ -60,35 +69,44 @@ def focus(clazz, title=None, cmd=None):
 
         if match:
             workspace.goto_workspace_for_window(w, screen)
-            w.activate(int(time.time()))
+            if no_wnck:
+                spawn('xdotool windowactivate %d' % w.get_xid())
+            else:
+                w.activate(int(time.time()))
             return
 
     if cmd is not None:
         spawn(cmd)
 
 
-def next_window():
+def next_window(no_wnck=False):
     """
     Focus the next window in the stack.
     """
     windows = _get_visible_windows()
     if len(windows) == 0: return
-    windows[0].activate(int(time.time()))
+    if no_wnck:
+        spawn('xdotool windowactivate %d' % windows[0].get_xid())
+    else:
+        windows[0].activate(int(time.time()))
 
 
-def prev_window():
+def prev_window(no_wnck=False):
     """
     Focus the previous window in the stack.
     """
     windows = _get_visible_windows()
     if len(windows) < 2: return
-    windows[-2].activate(int(time.time()))
+    if no_wnck:
+        spawn('xdotool windowactivate %d' % windows[-2].get_xid())
+    else:
+        windows[-2].activate(int(time.time()))
 
 
 def close():
-    screen  = wnck.screen_get_default()
+    screen = Wnck.Screen.get_default()
     screen.force_update()
-    active  = screen.get_active_window()
+    active = screen.get_active_window()
     active.close(int(time.time()))
 
 
@@ -97,10 +115,10 @@ def goto_workspace(direction, wsType):
     @param   direction   PREV_WS or NEXT_WS
     @param   wsType      EMPTY_WS or USED_WS
     """
-    screen  = wnck.screen_get_default()
+    screen = Wnck.Screen.get_default()
     screen.force_update()
 
-    workspaces =     _build_workspaces(direction, screen)
+    workspaces     = _build_workspaces(direction, screen)
     window_anchors = _build_window_anchors(screen)
 
     test = (     (lambda x, xs: x in xs) 
@@ -118,10 +136,10 @@ def move_to_workspace(direction, wsType):
     @param   direction   PREV_WS or NEXT_WS
     @param   wsType      EMPTY_WS or USED_WS
     """
-    screen  = wnck.screen_get_default()
+    screen = Wnck.Screen.get_default()
     screen.force_update()
 
-    workspaces =     _build_workspaces(direction, screen)
+    workspaces     = _build_workspaces(direction, screen)
     window_anchors = _build_window_anchors(screen)
 
     test = (     (lambda x, xs: x in xs) 
@@ -165,7 +183,7 @@ def _build_window_anchors(screen):
 
 
 def _get_windows_sorted(screen):
-    active  = screen.get_active_window()
+    active = screen.get_active_window()
     return _sort_active_last(active, screen.get_windows())
 
 
@@ -187,7 +205,7 @@ def _sort_active_last(active, windows):
     return windows1 + windows2
 
 def _get_visible_windows():
-    screen = wnck.screen_get_default()
+    screen = Wnck.Screen.get_default()
     screen.force_update()
     ws = screen.get_active_workspace()
 
