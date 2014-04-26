@@ -45,13 +45,14 @@ def spawn(cmd):
         os._exit(0)
 
 
-def focus(clazz, title=None, cmd=None, no_wnck=False):
+def focus(clazz, title=None, name=None, cmd=None, no_wnck=False):
     """
     Focus a window matching a class. Cycle between multiple windows matching the class.
     
     @ptype   clazz   str
     @param   clazz   Regular expression to match against the window's class.
     @keyword title   If given, also match the window's title against this regular expression.
+    @keyword name    If given, also match the window's name against this regular expression.
     @keyword cmd     Shell command to run if now windows matches.
     @keyword no_wnck Uses xdotool instead of wnck to focus the window.
     """
@@ -63,9 +64,11 @@ def focus(clazz, title=None, cmd=None, no_wnck=False):
     windows = filter(window_types.is_focusable_type, windows)
 
     for w in windows:
-        match = re.match(clazz, w.get_class_group().get_res_class())
+        match = re.match(clazz, w.get_class_group().get_res_class()) is not None
         if title is not None:
-            match = match and re.match(title, w.get_name())
+            match &= re.match(title, w.get_name()) is not None
+        if name is not None:
+            match &= re.match(name, w.get_class_instance_name()) is not None
 
         if match:
             workspace.goto_workspace_for_window(w, screen)
