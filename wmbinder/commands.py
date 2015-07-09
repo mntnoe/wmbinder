@@ -45,7 +45,7 @@ def spawn(cmd):
         os._exit(0)
 
 
-def focus(clazz, title=None, name=None, cmd=None, no_wnck=False):
+def focus(clazz, title=None, name=None, cmd=None, wnck=False):
     """
     Focus a window matching a class. Cycle between multiple windows matching the class.
     
@@ -72,7 +72,7 @@ def focus(clazz, title=None, name=None, cmd=None, no_wnck=False):
 
         if match:
             workspace.goto_workspace_for_window(w, screen)
-            if no_wnck:
+            if not wnck:
                 spawn('xdotool windowactivate %d' % w.get_xid())
             else:
                 w.activate(int(time.time()))
@@ -82,35 +82,39 @@ def focus(clazz, title=None, name=None, cmd=None, no_wnck=False):
         spawn(cmd)
 
 
-def next_window(no_wnck=False):
+def next_window(wnck=False):
     """
     Focus the next window in the stack.
     """
     windows = _get_visible_windows()
     if len(windows) == 0: return
-    if no_wnck:
+    if not wnck:
         spawn('xdotool windowactivate %d' % windows[0].get_xid())
     else:
         windows[0].activate(int(time.time()))
 
 
-def prev_window(no_wnck=False):
+def prev_window(wnck=False):
     """
     Focus the previous window in the stack.
     """
     windows = _get_visible_windows()
     if len(windows) < 2: return
-    if no_wnck:
+    if not wnck:
         spawn('xdotool windowactivate %d' % windows[-2].get_xid())
     else:
         windows[-2].activate(int(time.time()))
 
 
-def close():
-    screen = Wnck.Screen.get_default()
-    screen.force_update()
-    active = screen.get_active_window()
-    active.close(int(time.time()))
+def close(wnck=False):
+    if not wnck:
+        # xdotool does not support gracefully closing a window
+        spawn('wmctrl -c :ACTIVE:')
+    else:
+        screen = Wnck.Screen.get_default()
+        screen.force_update()
+        active = screen.get_active_window()
+        active.close(int(time.time()))
 
 
 def goto_workspace(direction, wsType):
