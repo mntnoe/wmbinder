@@ -28,7 +28,7 @@ def setup_service(path):
                 except OSError:
                     break;
         except Exception as e:
-            print 'Error killing old wmbinder instance: %s' % e
+            print('Error killing old wmbinder instance: %s' % e)
 
 
     try:
@@ -37,7 +37,7 @@ def setup_service(path):
         handle.close()
         atexit.register(_remove_pid_file, pidfile)
     except Exception as e:
-            print 'Error writing pid file: %s' % e
+            print('Error writing pid file: %s' % e)
 
 
 
@@ -45,5 +45,5 @@ def _remove_pid_file(pidfile):
     try:
         os.remove(pidfile)
     except Exception as e:
-        print 'Error removing pid file: %s' % e
+        print('Error removing pid file: %s' % e)
 

@@ -30,7 +30,7 @@ def bind(binding, func, *args, **kwargs):
         pass
     success = Keybinder.bind(binding, run, None)
     if not success:
-        print "Error binding '%s'" % binding
+        print("Error binding '%s'" % binding)
 
 
 def spawn(cmd):

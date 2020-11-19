@@ -31,7 +31,7 @@ def goto_workspace_for_window(w, screen):
     ws = get_workspace_for_window(w, screen)
 
     if (ws != active):
-	goto_workspace_no(ws, screen)
+        goto_workspace_no(ws, screen)
     
 
 def get_workspace_for_window(window, screen):
